@@ -1,0 +1,23 @@
+{
+  "result": [
+    {
+      "latitude": 60.98399,
+      "declination": 10.52096,
+      "elevation": 0,
+      "date": 2023.0575,
+      "declination_uncertainty": 0.46931,
+      "declnation_sv": 0.19796,
+      "longitude": 25.63485
+    }
+  ],
+  "model": "WMM-2020",
+  "units": {
+    "latitude": "degrees",
+    "declination": "degrees",
+    "longitude": "degrees",
+    "elevation": "km",
+    "declination_sv": "degrees",
+    "declination_uncertainty": "degrees"
+  },
+  "version": "0.5.1.11"
+}
