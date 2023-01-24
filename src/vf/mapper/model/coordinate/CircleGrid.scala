@@ -43,19 +43,19 @@ case class CircleGrid(circlesUntilRadius: Int = 1, innerCircleSectors: Int = 4, 
 	def sectorStartAnglesAt(circleIndex: Int) = {
 		val w = sectorWidthAt(circleIndex)
 		val n = sectorCountAt(circleIndex)
-		(0 until n).map { w * _.toDouble / n }
+		(0 until n).map { w * _.toDouble }
 	}
 	
 	/**
 	 * @param index Targeted circle index (0-based)
 	 * @return The radius of the targeted circle
 	 */
-	def circleRadiusAt(index: Int) = (index + 1).toDouble / circlesUntilRadius
+	private def circleRadiusAt(index: Int) = (index + 1).toDouble / circlesUntilRadius
 	/**
 	 * @param index Targeted circle index
 	 * @return Targeted circle
 	 */
-	def circle(index: Int) = Circle(radius = circleRadiusAt(index))
+	def circle(index: Int)(implicit eq: Equator) = Circle(eq.north, circleRadiusAt(index) * eq.radius)
 	
 	/**
 	 * Checks which grid index contains the specified map point
