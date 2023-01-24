@@ -18,16 +18,19 @@ object OverlayGridTest extends App
 		CircleGrid(),
 		CircleGrid(2),
 		CircleGrid(4),
+		CircleGrid(6),
+		CircleGrid(8),
+		CircleGrid(10),
 		CircleGrid(2, 8),
 		CircleGrid(4, 8),
-		CircleGrid(2, 4, 3),
-		CircleGrid(4, 4, 1.5),
-		CircleGrid(4, 8, 3)
+		CircleGrid(6, 8),
+		CircleGrid(8, 8),
+		CircleGrid(10, 8)
 	)
 	
-	implicit val ss: StrokeSettings = StrokeSettings(Color.red, 3.0)
+	implicit val ss: StrokeSettings = StrokeSettings(Color.red.withAlpha(0.8))
 	grids.foreach { grid =>
-		val name = s"grid-${grid.circlesUntilRadius}-${grid.innerCircleSectors}-${grid.segmentMultiplier}"
+		val name = s"grid-${grid.circlesUntilRadius}-${grid.innerCircleSectors}"
 		println(s"Drawing $name...")
 		CircleGridDrawer.overlay(map, grid).image.writeToFile(mapOutputDir/s"$name.png")
 	}

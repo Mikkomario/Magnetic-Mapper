@@ -20,17 +20,18 @@ import utopia.paradigm.shape.shape2d.{Circle, Vector2D}
  *                           The number of circles for the outer circles is based on this value, plus the
  *                           'segmentMultiplier'.
  *                           Default = 4 = The innermost circle is divided into 4 regions.
- * @param segmentMultiplier The multiplier applied to the number of sectors when moving
- *                          from an inner circle to its neighboring outer circle.
- *                          Default = 2.0 = the number of sectors is doubled at every circle.
  */
-case class CircleGrid(circlesUntilRadius: Int = 1, innerCircleSectors: Int = 4, segmentMultiplier: Double = 2.0)
+case class CircleGrid(circlesUntilRadius: Int = 1, innerCircleSectors: Int = 4)
 {
+	// d = 2Pi*r1 / Sc1
+	// r1 = 1/circlesUntilRadius
+	private val segmentLength = (2.0 * math.Pi) / (innerCircleSectors * circlesUntilRadius)
+	
 	/**
 	 * @param circleIndex Index of the targeted circle
 	 * @return Number of sectors on that circle
 	 */
-	def sectorCountAt(circleIndex: Int) = (innerCircleSectors * Math.pow(segmentMultiplier, circleIndex)).ceil.toInt
+	def sectorCountAt(circleIndex: Int) = (2 * math.Pi * circleRadiusAt(circleIndex) / segmentLength).toInt
 	/**
 	 * @param circleIndex Index of the targeted circle
 	 * @return The width of each sector on that circle, as an angle
