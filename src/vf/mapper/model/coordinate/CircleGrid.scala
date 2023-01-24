@@ -1,8 +1,22 @@
 package vf.mapper.model.coordinate
 
 import utopia.flow.collection.immutable.Pair
+import utopia.flow.generic.casting.ValueConversions._
+import utopia.flow.generic.factory.FromModelFactoryWithSchema
+import utopia.flow.generic.model.immutable.{Model, ModelDeclaration}
+import utopia.flow.generic.model.mutable.DataType.IntType
+import utopia.flow.generic.model.template.ModelConvertible
 import utopia.paradigm.angular.Angle
 import utopia.paradigm.shape.shape2d.{Circle, Vector2D}
+
+object CircleGrid extends FromModelFactoryWithSchema[CircleGrid]
+{
+	override lazy val schema: ModelDeclaration =
+		ModelDeclaration("circlesUntilEquator" -> IntType, "firstCircleSectorsCount" -> IntType)
+	
+	override protected def fromValidatedModel(model: Model): CircleGrid =
+		apply(model("circlesUntilEquator").getInt, model("firstCircleSectorsCount").getInt)
+}
 
 /**
  * A grid which groups coordinates together on a circle.
@@ -21,11 +35,22 @@ import utopia.paradigm.shape.shape2d.{Circle, Vector2D}
  *                           'segmentMultiplier'.
  *                           Default = 4 = The innermost circle is divided into 4 regions.
  */
-case class CircleGrid(circlesUntilRadius: Int = 1, innerCircleSectors: Int = 4)
+case class CircleGrid(circlesUntilRadius: Int = 1, innerCircleSectors: Int = 4) extends ModelConvertible
 {
+	// ATTRIBUTES   ---------------------------
+	
 	// d = 2Pi*r1 / Sc1
 	// r1 = 1/circlesUntilRadius
 	private val segmentLength = (2.0 * math.Pi) / (innerCircleSectors * circlesUntilRadius)
+	
+	
+	// IMPLEMENTED  ---------------------------
+	
+	override def toModel: Model = Model.from(
+		"circlesUntilEquator" -> circlesUntilRadius, "firstCircleSectorsCount" -> innerCircleSectors)
+	
+	
+	// OTHER    -------------------------------
 	
 	/**
 	 * @param circleIndex Index of the targeted circle

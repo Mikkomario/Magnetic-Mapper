@@ -1,12 +1,32 @@
 package vf.mapper.model.coordinate
 
 import utopia.flow.collection.immutable.Pair
+import utopia.flow.generic.casting.ValueConversions._
+import utopia.flow.generic.factory.FromModelFactoryWithSchema
+import utopia.flow.generic.model.immutable.{Model, ModelDeclaration}
+import utopia.flow.generic.model.template.ModelConvertible
 import utopia.paradigm.angular.{Angle, Rotation}
 import utopia.paradigm.enumeration.RotationDirection.Counterclockwise
+import utopia.paradigm.generic.ParadigmDataType.{AngleType, RotationType, Vector2DType}
+import utopia.paradigm.generic.ParadigmValue._
 import utopia.paradigm.shape.shape2d.{Point, Vector2D}
 
-object MapPoint
+object MapPoint extends FromModelFactoryWithSchema[MapPoint]
 {
+	// ATTRIBUTES   ------------------------
+	
+	override lazy val schema: ModelDeclaration =
+		ModelDeclaration("vector" -> Vector2DType, "latitude" -> RotationType, "longitude" -> AngleType)
+	
+	
+	// IMPLEMENTED  -----------------------
+	
+	override protected def fromValidatedModel(model: Model): MapPoint =
+		apply(model("vector").getVector2D, model("latitude").getRotation, model("longitude").getAngle)
+	
+	
+	// OTHER    ---------------------------
+	
 	/**
 	 * @param vector A position from the north pole to the specified destination, where length 1 is the equator radius.
 	 * @return A new map point based on the specified position.
@@ -64,8 +84,10 @@ object MapPoint
  *                  0 means Greenwich, England. Positive ]0, 180[ values are towards the east
  *                  and negative ]180, 360[ towards the west.
  */
-case class MapPoint(vector: Vector2D, latitude: Rotation, longitude: Angle)
+case class MapPoint(vector: Vector2D, latitude: Rotation, longitude: Angle) extends ModelConvertible
 {
+	// COMPUTED ---------------------------
+	
 	/**
 	 * @return The latitude and longitude coordinates of this point, as degrees
 	 */
@@ -77,4 +99,20 @@ case class MapPoint(vector: Vector2D, latitude: Rotation, longitude: Angle)
 	 */
 	def pixel(implicit imageEquator: Equator) =
 		imageEquator.north + vector * imageEquator.radius
+	
+	
+	// IMPLEMENTED  ------------------------
+	
+	override def toModel: Model =
+		Model.from("vector" -> vector, "latitude" -> latitude, "longitude" -> longitude)
+	
+	
+	// OTHER    ----------------------------
+	
+	/**
+	 * Attaches magnetic declination information to this map point
+	 * @param declination Magnetic declination at this location (see [[MagneticMapPoint]] for details)
+	 * @return A copy of this point with declination included
+	 */
+	def magnetic(declination: Rotation) = MagneticMapPoint(this, declination)
 }

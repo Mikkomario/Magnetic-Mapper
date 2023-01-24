@@ -1,13 +1,8 @@
 package vf.mapper.logic.input.map
 
-import utopia.flow.collection.CollectionExtensions._
 import utopia.flow.collection.immutable.Pair
-import utopia.flow.collection.mutable.MutableMatrix
-import utopia.flow.operator.{Identity, Sign}
-import utopia.flow.view.mutable.Pointer
 import utopia.genesis.image.{Image, Pixels}
 import utopia.paradigm.color.Color
-import utopia.paradigm.enumeration.Direction2D
 import utopia.paradigm.shape.shape2d.Point
 import vf.mapper.model.coordinate.MapPoint
 import vf.mapper.model.enumeration.TerrainType.{Land, Snow, Water}
@@ -25,7 +20,10 @@ class CoastDetector(source: MapImage)
 	// ATTRIBUTES   ----------------------
 	
 	lazy val terrainMatrix = source.image.pixels.map(terrainForColor)
-	lazy val coastMatrix = {
+	lazy val coastMatrix = terrainMatrix.mapWithIndex { (terrain, pos) =>
+		terrain != Water && terrainMatrix.viewRegionAround(pos).iterator.contains(Water)
+	}
+/*{
 		// Identifies the pixels which lie on the coast
 		val mutable = MutableMatrix(terrainMatrix.mapWithIndex { (terrain, pos) =>
 			Pointer(terrain != Water && terrainMatrix.viewRegionAround(pos).iterator.contains(Water))
@@ -70,7 +68,7 @@ class CoastDetector(source: MapImage)
 		}
 		// TODO: Clean
 		mutable.currentState
-	}
+	}*/
 	// TODO: Return coast polygons instead, where additional points have been removed
 	lazy val coastPoints = coastMatrix.iteratorWithIndex.flatMap { case (isCoast, pos) =>
 		if (isCoast)
