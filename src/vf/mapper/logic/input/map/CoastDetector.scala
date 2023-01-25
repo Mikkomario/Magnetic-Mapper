@@ -1,10 +1,11 @@
 package vf.mapper.logic.input.map
 
-import utopia.flow.collection.immutable.Pair
+import utopia.flow.collection.immutable.{Matrix, Pair}
 import utopia.genesis.image.{Image, Pixels}
 import utopia.paradigm.color.Color
 import utopia.paradigm.shape.shape2d.Point
 import vf.mapper.model.coordinate.MapPoint
+import vf.mapper.model.enumeration.TerrainType
 import vf.mapper.model.enumeration.TerrainType.{Land, Snow, Water}
 import vf.mapper.model.map.MapImage
 
@@ -12,18 +13,66 @@ import vf.mapper.model.map.MapImage
  * Used for detecting coastlines within an image map
  * @author Mikko Hilpinen
  * @since 22.1.2023, v0.1
- * @param source The image from which coastal data is taken
  */
-// TODO: Refactor and clean up this class (convert into an object)
-class CoastDetector(source: MapImage)
+object CoastDetector
 {
-	// ATTRIBUTES   ----------------------
+	/**
+	 * Reads terrain data from a map
+	 * @param map Map that is being read
+	 * @return A matrix containing the terrain type for each map pixel
+	 */
+	def detectTerrainFrom(map: MapImage) = map.image.pixels.map(terrainForColor)
 	
-	lazy val terrainMatrix = source.image.pixels.map(terrainForColor)
-	lazy val coastMatrix = terrainMatrix.mapWithIndex { (terrain, pos) =>
-		terrain != Water && terrainMatrix.viewRegionAround(pos).iterator.contains(Water)
+	/**
+	 * Reads coastline from a terrain matrix
+	 * @param terrainMatrix A matrix that contains a terrain type for each cell
+	 * @return A matrix that contains true for each cell that lies on the coast (i.e. between land and water)
+	 */
+	def detectCoastFrom(terrainMatrix: Matrix[TerrainType]) =
+		terrainMatrix.mapWithIndex { (terrain, pos) =>
+			terrain != Water && terrainMatrix.viewRegionAround(pos).iterator.contains(Water)
+		}
+	/**
+	 * Reads coastline from a map.
+	 * In case you have acquired a terrain matrix, please use that as an input parameter instead.
+	 * @param map Map that is being read
+	 * @return A matrix that contains true for each pixel that lies on the coast (i.e. between land and water)
+	 */
+	def detectCoastFrom(map: MapImage): Matrix[Boolean] = detectCoastFrom(detectTerrainFrom(map))
+	
+	/**
+	 * Draws a terrain matrix as an image
+	 * @param terrainMatrix Matrix to draw
+	 * @return An image based on the the specified terrain matrix
+	 */
+	def drawTerrain(terrainMatrix: Matrix[TerrainType]) =
+		Image.fromPixels(Pixels(terrainMatrix.map {
+			case Water => Color.blue
+			case Snow => Color.white
+			case Land => Color.green
+		}))
+	/**
+	 * Draws a coastline as an image
+	 * @param coastMatrix Matrix to draw
+	 * @return An image where the coastline is highlighted
+	 */
+	def drawCoast(coastMatrix: Matrix[Boolean]) =
+		Image.fromPixels(Pixels(coastMatrix.map { if (_) Color.black else Color.white }))
+	
+	private def terrainForColor(color: Color) = {
+		if (color.luminosity > 0.8)
+			Snow
+		else {
+			val nonBlue = Pair(color.red, color.green)
+			if (nonBlue.forall { _ < color.blue - 0.1 })
+				Water
+			else
+				Land
+		}
 	}
-/*{
+	
+	// An algorithm for cleaning coast pixels. Use if you want to create a polygon based on the coast points.
+	/*{
 		// Identifies the pixels which lie on the coast
 		val mutable = MutableMatrix(terrainMatrix.mapWithIndex { (terrain, pos) =>
 			Pointer(terrain != Water && terrainMatrix.viewRegionAround(pos).iterator.contains(Water))
@@ -66,36 +115,6 @@ class CoastDetector(source: MapImage)
 					false
 			}
 		}
-		// TODO: Clean
 		mutable.currentState
 	}*/
-	// TODO: Return coast polygons instead, where additional points have been removed
-	lazy val coastPoints = coastMatrix.iteratorWithIndex.flatMap { case (isCoast, pos) =>
-		if (isCoast)
-			Some(MapPoint.pixel(Point.from(pos.map { _.toDouble }))(source.equator))
-		else
-			None
-	}.toVector
-	
-	lazy val terrainImage = Image.fromPixels(Pixels(terrainMatrix.map {
-		case Water => Color.blue
-		case Snow => Color.white
-		case Land => Color.green
-	}))
-	lazy val toImage = Image.fromPixels(Pixels(coastMatrix.map { if (_) Color.black else Color.white }))
-	
-	
-	// OTHER    --------------------------
-	
-	private def terrainForColor(color: Color) = {
-		if (color.luminosity > 0.8)
-			Snow
-		else {
-			val nonBlue = Pair(color.red, color.green)
-			if (nonBlue.forall { _ < color.blue - 0.1 })
-				Water
-			else
-				Land
-		}
-	}
 }

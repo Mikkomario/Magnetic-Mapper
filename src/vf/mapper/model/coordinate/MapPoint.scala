@@ -45,8 +45,8 @@ object MapPoint extends FromModelFactoryWithSchema[MapPoint]
 	 * @param equator The equator in the image
 	 * @return A map coordinate
 	 */
-	def pixel(pixel: Point)(implicit equator: Equator): MapPoint =
-		apply((pixel - equator.north).toVector / equator.radius)
+	def pixel(pixel: Pair[Int])(implicit equator: Equator): MapPoint =
+		apply((Point.from(pixel.map { _.toDouble }) - equator.north).toVector / equator.radius)
 	
 	/**
 	 * Converts a latitude, longitude -pair into a map point
@@ -90,8 +90,15 @@ case class MapPoint(vector: Vector2D, latitude: Rotation, longitude: Angle) exte
 	
 	/**
 	 * @return The latitude and longitude coordinates of this point, as degrees
+	 *         (between lat: -90 and 90, and lon: -180 and 180)
 	 */
-	def latLongDegrees = Pair(latitude.counterClockwiseDegrees, longitude.degrees)
+	def latLongDegrees = {
+		val lonDegrees = {
+			val base = longitude.degrees
+			if (base <= 180) base else base - 360
+		}
+		Pair(latitude.counterClockwiseDegrees, lonDegrees)
+	}
 	
 	/**
 	 * @param imageEquator The equator at the visual map

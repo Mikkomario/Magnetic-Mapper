@@ -11,11 +11,11 @@ import vf.mapper.test.TestValues._
  */
 object MapCoastTest extends App
 {
-	val detector = new CoastDetector(map)
+	val terrain = CoastDetector.detectTerrainFrom(map)
 	println("Drawing terrain...")
-	detector.terrainImage.writeToFile(mapOutputDir/"terrain.png")
+	CoastDetector.drawTerrain(terrain).writeToFile(mapOutputDir/"terrain.png")
 	println("Drawing coast...")
-	detector.toImage.writeToFile(mapOutputDir/"coasts.png")
+	CoastDetector.drawCoast(CoastDetector.detectCoastFrom(terrain)).writeToFile(mapOutputDir/"coasts.png")
 	println("Done!")
 	mapOutputDir.openInDesktop()
 }

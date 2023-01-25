@@ -1,6 +1,7 @@
 package vf.mapper.test
 
 import utopia.flow.parse.file.FileExtensions._
+import utopia.flow.util.logging.Logger
 import utopia.genesis.image.Image
 import utopia.paradigm.shape.shape2d.{Circle, Size}
 import vf.mapper.model.coordinate.Equator
@@ -17,6 +18,7 @@ object TestValues
 {
 	// ATTRIBUTES   ---------------------
 	
+	lazy val declinationsDir: Path = Paths.get("data/input/declinations").asExistingDirectory.get
 	lazy val mapOutputDir: Path = Paths.get("data/output/maps").asExistingDirectory.get
 	lazy val map = {
 		val image = Image.readFrom("data/input/maps/azimutal.jpg")
