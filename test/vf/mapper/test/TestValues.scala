@@ -1,9 +1,8 @@
 package vf.mapper.test
 
 import utopia.flow.parse.file.FileExtensions._
-import utopia.flow.util.logging.Logger
 import utopia.genesis.image.Image
-import utopia.paradigm.shape.shape2d.{Circle, Size}
+import utopia.paradigm.shape.shape2d.Circle
 import vf.mapper.model.coordinate.Equator
 import vf.mapper.model.map.MapImage
 
@@ -22,7 +21,7 @@ object TestValues
 	lazy val mapOutputDir: Path = Paths.get("data/output/maps").asExistingDirectory.get
 	lazy val map = {
 		val image = Image.readFrom("data/input/maps/azimutal.jpg")
-			.get.withMaxSourceResolution(Size.square(480)).withScaling(1.0)
+			.get// .withMaxSourceResolution(Size.square(480)).withScaling(1.0)
 		MapImage(image, Equator(Circle(image.bounds.center, image.size.minDimension / 4.0)))
 	}
 }

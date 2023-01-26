@@ -37,6 +37,11 @@ case class MagneticMapPoint(point: MapPoint, declination: Rotation) extends Exte
 	 * one would travel north and eventually arrive at the north pole (0,0).
 	 */
 	lazy val corrected = point.copy(vector = point.vector.rotatedAround(declination, Point.origin))
+	/**
+	 * This location, when magnetic declination has been "corrected" to the opposite direction.
+	 * Why? Basically to see if I've interpreted the declination system incorrectly at some point.
+	 */
+	lazy val reverseCorrected = point.copy(vector = point.vector.rotatedAround(-declination, Point.origin))
 	
 	
 	// IMPLEMENTED  ---------------------------
