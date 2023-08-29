@@ -26,7 +26,7 @@ object AccessApiTest extends App
 	Status.setup()
 	
 	implicit val logger: Logger = SysErrLogger
-	implicit val exc: ExecutionContext = new ThreadPool("Magnetic-Test").executionContext
+	implicit val exc: ExecutionContext = new ThreadPool("Magnetic-Test")
 	
 	val gateway = Gateway(Vector(JsonBunny), parameterEncoding = Some(Codec.UTF8), allowJsonInUriParameters = false)
 	

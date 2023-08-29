@@ -7,7 +7,8 @@ import utopia.flow.generic.model.immutable.{Model, ModelDeclaration}
 import utopia.flow.generic.model.mutable.DataType.IntType
 import utopia.flow.generic.model.template.ModelConvertible
 import utopia.paradigm.angular.Angle
-import utopia.paradigm.shape.shape2d.{Circle, Vector2D}
+import utopia.paradigm.shape.shape2d.area.Circle
+import utopia.paradigm.shape.shape2d.vector.Vector2D
 
 object CircleGrid extends FromModelFactoryWithSchema[CircleGrid]
 {

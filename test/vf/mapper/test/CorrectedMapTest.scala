@@ -15,7 +15,10 @@ import utopia.genesis.image.Image
 import utopia.paradigm.color.Color
 import utopia.paradigm.enumeration.RotationDirection
 import utopia.paradigm.enumeration.RotationDirection.{Clockwise, Counterclockwise}
-import utopia.paradigm.shape.shape2d.{Bounds, Circle, Line, Point}
+import utopia.paradigm.shape.shape2d.area.Circle
+import utopia.paradigm.shape.shape2d.area.polygon.c4.bounds.Bounds
+import utopia.paradigm.shape.shape2d.line.Line
+import utopia.paradigm.shape.shape2d.vector.point.Point
 import vf.mapper.logic.input.api.{DeclinationApi, DeclinationReader}
 import vf.mapper.model.coordinate.{CircleGrid, Equator, MapPoint}
 import vf.mapper.util.Common._
@@ -67,7 +70,7 @@ object CorrectedMapTest extends App
 		case Success(coast) =>
 			// Draws maps based on the acquired data
 			val imgSize = map.image.size
-			val whiteFrame = Image.paint2(imgSize) { drawer =>
+			val whiteFrame = Image.paint(imgSize) { drawer =>
 				drawer.draw(Bounds(Point.origin, imgSize))(DrawSettings.onlyFill(Color.white))
 			}
 			val directionColor = Map[RotationDirection, Color](Clockwise -> Color.red, Counterclockwise -> Color.blue)
@@ -75,7 +78,7 @@ object CorrectedMapTest extends App
 			
 			// 1: The original coastline
 			println("Draws maps...")
-			whiteFrame.paintedOver2 { drawer =>
+			whiteFrame.paintedOver { drawer =>
 				implicit val ds: DrawSettings = StrokeSettings.default
 				coastPoints.foreach { p =>
 					val pixel = p.pixel
@@ -85,7 +88,7 @@ object CorrectedMapTest extends App
 			mapProgressTracker.proceed()
 			
 			// 2: Declination-corrected coastline
-			val correctedCoastImage = Image.paint2(imgSize) { drawer =>
+			val correctedCoastImage = Image.paint(imgSize) { drawer =>
 				implicit val ds: DrawSettings = StrokeSettings.default
 				coast.foreach { point =>
 					val pixel = point.corrected.pixel
@@ -96,18 +99,18 @@ object CorrectedMapTest extends App
 			mapProgressTracker.proceed()
 			
 			// 3: Declination-corrected coastline and the original coastline
-			whiteFrame.paintedOver2 { drawer =>
+			whiteFrame.paintedOver { drawer =>
 				implicit val ds: DrawSettings = StrokeSettings(Color.black.withAlpha(0.5))
 				coastPoints.foreach { p =>
 					val pixel = p.pixel
 					drawer.draw(Line(pixel, pixel))
 				}
-				correctedCoastImage.drawWith2(drawer)
+				correctedCoastImage.drawWith(drawer)
 			}.writeToFile(mapOutputDir/"corrected-and-old-coast.png")
 			mapProgressTracker.proceed()
 			
 			// 4: Corrected coast-line with colouring based on movement
-			whiteFrame.paintedOver2 { drawer =>
+			whiteFrame.paintedOver { drawer =>
 				val maxShiftDistance = coast.iterator.map { p => (p.corrected.vector - p.vector).length }.max
 				
 				coast.foreach { p =>
@@ -119,7 +122,7 @@ object CorrectedMapTest extends App
 			mapProgressTracker.proceed()
 			
 			// 5: Reverse-corrected coast-line with colouring based on movement
-			whiteFrame.paintedOver2 { drawer =>
+			whiteFrame.paintedOver { drawer =>
 				val maxShiftDistance = coast.iterator.map { p => (p.reverseCorrected.vector - p.vector).length }.max
 				
 				coast.foreach { p =>
@@ -131,7 +134,7 @@ object CorrectedMapTest extends App
 			mapProgressTracker.proceed()
 			
 			// 6: Original coastline with magnetic declination -highlighting
-			whiteFrame.paintedOver2 { drawer =>
+			whiteFrame.paintedOver { drawer =>
 				val maxDeclination = coast.iterator.map { _.declination.radians }.max
 				coast.foreach { p =>
 					val pixel = p.pixel

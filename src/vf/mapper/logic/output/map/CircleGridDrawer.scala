@@ -2,7 +2,8 @@ package vf.mapper.logic.output.map
 
 import utopia.flow.collection.CollectionExtensions._
 import utopia.genesis.graphics.{DrawSettings, StrokeSettings}
-import utopia.paradigm.shape.shape2d.{Circle, Line}
+import utopia.paradigm.shape.shape2d.area.Circle
+import utopia.paradigm.shape.shape2d.line.Line
 import vf.mapper.model.coordinate.{CircleGrid, Equator}
 import vf.mapper.model.map.MapImage
 
@@ -23,7 +24,7 @@ object CircleGridDrawer
 	def overlay(map: MapImage, grid: CircleGrid)(implicit settings: StrokeSettings) = {
 		implicit val eq: Equator = map.equator
 		val circleCount = (map.maxDistance * grid.circlesUntilRadius).toInt
-		map.mapImage { _.paintedOver2 { drawer =>
+		map.mapImage { _.paintedOver { drawer =>
 			implicit val ds: DrawSettings = settings
 			// Draws the items in a coordinate system that is positioned and scaled to match the map
 			drawer.use { drawer =>

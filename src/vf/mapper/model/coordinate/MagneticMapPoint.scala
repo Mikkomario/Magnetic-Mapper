@@ -7,7 +7,7 @@ import utopia.flow.generic.model.template.{ModelConvertible, ModelLike, Property
 import utopia.flow.view.template.Extender
 import utopia.paradigm.angular.Rotation
 import utopia.paradigm.generic.ParadigmValue._
-import utopia.paradigm.shape.shape2d.Point
+import utopia.paradigm.shape.shape2d.vector.point.Point
 
 import scala.util.Try
 

@@ -3,8 +3,6 @@ package vf.mapper.logic.input.map
 import utopia.flow.collection.immutable.{Matrix, Pair}
 import utopia.genesis.image.{Image, Pixels}
 import utopia.paradigm.color.Color
-import utopia.paradigm.shape.shape2d.Point
-import vf.mapper.model.coordinate.MapPoint
 import vf.mapper.model.enumeration.TerrainType
 import vf.mapper.model.enumeration.TerrainType.{Land, Snow, Water}
 import vf.mapper.model.map.MapImage

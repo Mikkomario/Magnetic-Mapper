@@ -19,7 +19,7 @@ import vf.mapper.model.coordinate.{CircleGrid, MagneticMapPoint, MapPoint}
 
 import java.nio.file.Path
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
+import scala.util.Success
 
 object DeclinationReader
 {
@@ -72,19 +72,16 @@ object DeclinationReader
 	private def parse(grid: CircleGrid, model: Model, api: DeclinationApi, path: Path)
 	                 (implicit exc: ExecutionContext, logger: Logger) =
 	{
-		// Data parsing may fail
+		// Data parsing may fail (logs errors)
 		val data = model("data").getVector.map { v =>
 			val model = v.getModel
 			model("index").tryPairWith { _.tryInt }
 				.flatMap { index => MagneticMapPoint(model("point").getModel).map { index -> _ } }
-		}.toTryCatch
-		// Logs non-critical errors (only 1)
-		val (error, parsed) = data match {
-			case Success((failures, parsed)) => failures.headOption -> parsed.toMap
-			case Failure(error) => Some(error) -> Map[Pair[Int], MagneticMapPoint]()
+		}.toTryCatch.logToTry.logToOption match {
+			case Some(data) => data.toMap
+			case None => Map[Pair[Int], MagneticMapPoint]()
 		}
-		error.foreach { logger(_, "Data parsing failed") }
-		new DeclinationReader(api, grid, parsed, Some(path))
+		new DeclinationReader(api, grid, data, Some(path))
 	}
 }
 
@@ -153,18 +150,17 @@ class DeclinationReader(api: DeclinationApi, grid: CircleGrid,
 				case None =>
 					// Requests declination for the grid cell center-point
 					val cellCenter = grid.centerOf(index)
-					val resultFuture = requestLimiter.push { api.getDeclinationAt(cellCenter.latLongDegrees) }
-						.tryMapIfSuccess {
-							// Case: Successful (2XX) response => Parses declination from the response
-							case Response.Success(_, body, _) =>
-								body.parsedSingle.map { declination =>
-									// Stores the read declination value
-									declinationsPointer.update { _ + (index -> cellCenter.magnetic(declination)) }
-									point.magnetic(declination)
-								}
-							// Case: Failed request or response => Fails
-							case f: RequestFailure => f.toFailure
-						}
+					val resultFuture = requestLimiter.push { api.getDeclinationAt(cellCenter.latLongDegrees) }.map {
+						// Case: Successful (2XX) response => Parses declination from the response
+						case Response.Success(_, body, _) =>
+							body.parsedSingle.map { declination =>
+								// Stores the read declination value
+								declinationsPointer.update { _ + (index -> cellCenter.magnetic(declination)) }
+								point.magnetic(declination)
+							}
+						// Case: Failed request or response => Fails
+						case f: RequestFailure => f.toFailure
+					}
 					// If any request fails, terminates all pending requests as well
 					resultFuture.foreachFailure { _ => requestLimiter.stop() }
 					resultFuture

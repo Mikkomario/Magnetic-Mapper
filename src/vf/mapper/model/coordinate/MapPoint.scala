@@ -9,7 +9,8 @@ import utopia.paradigm.angular.{Angle, Rotation}
 import utopia.paradigm.enumeration.RotationDirection.Counterclockwise
 import utopia.paradigm.generic.ParadigmDataType.{AngleType, RotationType, Vector2DType}
 import utopia.paradigm.generic.ParadigmValue._
-import utopia.paradigm.shape.shape2d.{Point, Vector2D}
+import utopia.paradigm.shape.shape2d.vector.Vector2D
+import utopia.paradigm.shape.shape2d.vector.point.Point
 
 object MapPoint extends FromModelFactoryWithSchema[MapPoint]
 {

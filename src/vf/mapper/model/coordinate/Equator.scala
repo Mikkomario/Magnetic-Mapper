@@ -1,6 +1,6 @@
 package vf.mapper.model.coordinate
 
-import utopia.paradigm.shape.shape2d.Circle
+import utopia.paradigm.shape.shape2d.area.Circle
 
 /**
  * A coordinate system based on an equator on an azimuthal equidistant map

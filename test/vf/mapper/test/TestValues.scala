@@ -2,7 +2,7 @@ package vf.mapper.test
 
 import utopia.flow.parse.file.FileExtensions._
 import utopia.genesis.image.Image
-import utopia.paradigm.shape.shape2d.Circle
+import utopia.paradigm.shape.shape2d.area.Circle
 import vf.mapper.model.coordinate.Equator
 import vf.mapper.model.map.MapImage
 

@@ -2,19 +2,20 @@ package vf.mapper.logic.input.api
 
 import utopia.access.http.Headers
 import utopia.annex.controller.Api
+import utopia.annex.model.response.RequestNotSent.RequestSendingFailed
+import utopia.annex.model.response.RequestResult
 import utopia.bunnymunch.jawn.JsonBunny
 import utopia.disciple.apache.Gateway
 import utopia.disciple.controller.RequestInterceptor
 import utopia.disciple.http.request.{Body, StringBody, Timeout}
-import utopia.flow.async.TryFuture
 import utopia.flow.collection.immutable.Pair
 import utopia.flow.generic.casting.ValueConversions._
 import utopia.flow.generic.model.immutable.{Model, Value}
 import utopia.flow.time.TimeExtensions._
 import utopia.flow.util.logging.Logger
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Codec
 
 /**
@@ -53,20 +54,21 @@ class DeclinationApi(key: String, timeout: FiniteDuration = 5.minutes)(implicit 
 	 * Requests magnetic declination information
 	 * @param latLong Targeted latitude + longitude coordinates
 	 * @param exc Implicit execution context
-	 * @return Future of the response received from the API
+	 * @return Future resolving into the result received
 	 */
 	// From the API response:
 	// lat1: decimal degrees or degrees minutes seconds: -90.0 to 90.0
 	// lon1: decimal degrees or degrees minutes seconds: -180.0 to 180.0
-	def getDeclinationAt(latLong: Pair[Double])(implicit exc: ExecutionContext) =
-	{
+	def getDeclinationAt(latLong: Pair[Double])(implicit exc: ExecutionContext): Future[RequestResult] = {
 		// Makes sure the parameters meet the API requirements
 		if (latLong.first.abs > 90)
-			TryFuture.failure(new IllegalArgumentException(s"The specified latitude ${
-				latLong.first } doesn't meet the API requirements, i.e. is not [-90.0, 90.0]"))
+			Future.successful(RequestSendingFailed(
+				new IllegalArgumentException(s"The specified latitude ${
+					latLong.first} doesn't meet the API requirements, i.e. is not [-90.0, 90.0]")))
 		else if (latLong.second.abs > 180)
-			TryFuture.failure(new IllegalArgumentException(s"The specified longitude ${
-				latLong.second } doesn't meet the API requirements, i.e. is not [-180.0, 180.0]"))
+			Future.successful(RequestSendingFailed(
+				new IllegalArgumentException(s"The specified longitude ${
+					latLong.second} doesn't meet the API requirements, i.e. is not [-180.0, 180.0]")))
 		else
 			get("calculators/calculateDeclination",
 				params = Model.from("lat1" -> latLong.first, "lon1" -> latLong.second))
